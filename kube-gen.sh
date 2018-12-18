@@ -200,8 +200,8 @@ kubeadm init --config /etc/kubernetes/kubeadm-config.yaml
 mkdir -p $HOME/.kube
 cp -f /etc/kubernetes/admin.conf ${HOME}/.kube/config
 
-kubectl apply -f https://raw.githubusercontent.com/Lentil1016/kubeadm-ha/1.13.0/calico/rbac.yaml
-curl -fsSL https://raw.githubusercontent.com/Lentil1016/kubeadm-ha/1.13.0/calico/calico.yaml | sed "s!8.8.8.8!${CP0_IP}!g" | sed "s!10.244.0.0/16!${CIDR}!g" | kubectl apply -f -
+kubectl apply -f https://raw.githubusercontent.com/hnbcao/kubeadm-ha-master/master/calico/rbac.yaml
+curl -fsSL https://raw.githubusercontent.com/hnbcao/kubeadm-ha-master/master/calico/calico.yaml | sed "s!8.8.8.8!${CP0_IP}!g" | sed "s!10.244.0.0/16!${CIDR}!g" | kubectl apply -f -
 
 JOIN_CMD=`kubeadm token create --print-join-command`
 
@@ -255,7 +255,7 @@ emailAddress_value              = hnbcao@gmail.com
 openssl req -newkey rsa:4096 -nodes -config ~/ikube/tls/openssl.cnf -days 3650 -x509 -out ~/ikube/tls/tls.crt -keyout ~/ikube/tls/tls.key
 kubectl create -n kube-system secret tls ssl --cert ~/ikube/tls/tls.crt --key ~/ikube/tls/tls.key
 #kubectl apply -f /root/ingress.yaml
-kubectl apply -f https://raw.githubusercontent.com/Lentil1016/kubeadm-ha/1.13.0/plugin/metrics.yaml
+kubectl apply -f https://raw.githubusercontent.com/hnbcao/kubeadm-ha-master/master/plugin/metrics.yaml
 #kubectl apply -f https://raw.githubusercontent.com/Lentil1016/kubeadm-ha/1.13.0/plugin/kubernetes-dashboard.yaml
 
 echo "Plugin install finished."
