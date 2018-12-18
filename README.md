@@ -140,7 +140,7 @@ NET_IF=eth0
 CIDR=10.244.0.0/16
 """ > ./cluster-info
  
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/Lentil1016/kubeadm-ha/1.13.0/kubeha-gen.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/hnbcao/kubeadm-ha-master/v1.3.0/kube-gen.sh)"
 # 该步骤将可能持续2到10分钟，在该脚本进行安装部署前，将有一次对安装信息进行检查确认的机会
 ```
 部署完成之后Dashboard的端口为30000。
