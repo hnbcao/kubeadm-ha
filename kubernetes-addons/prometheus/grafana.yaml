@@ -1,0 +1,69 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: grafana-data-pvc
+  namespace: kube-system
+spec:
+  storageClassName: cephfs
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  labels:
+    app: grafana
+  name: grafana
+  namespace: kube-system
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:5.0.0
+          env:
+            - name: GF_AUTH_BASIC_ENABLED
+              value: "true"
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "false"
+          readinessProbe:
+            httpGet:
+              path: /login
+              port: 3000
+          volumeMounts:
+            - mountPath: /var/lib/grafana
+              name: grafana-data-volume
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+      volumes:
+        - name: grafana-data-volume
+          persistentVolumeClaim:
+            claimName: grafana-data-pvc
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: grafana
+  name: grafana
+  namespace: kube-system
+spec:
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: grafana
+

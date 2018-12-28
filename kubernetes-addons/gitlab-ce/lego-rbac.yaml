@@ -1,0 +1,41 @@
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: cert-cluster-role
+rules:
+  - apiGroups:
+      - "extensions"
+    resources:
+      - ingresses
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - pods
+      - pods/exec
+      - endpoints
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: cert-cluster-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-cluster-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: kube-lego

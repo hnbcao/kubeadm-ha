@@ -34,7 +34,7 @@
 	systemctl stop firewalld
 	systemctl disable firewalld
 	setenforce 0
-	sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/	selinux/config
+	sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config
 	```
 * 关闭系统的Swap（Kubernetes 1.8开始要求）
 	
@@ -53,6 +53,7 @@
 	""" > /etc/sysctl.conf
 	sysctl -p
 	```
+	[centos7添加bridge-nf-call-ip6tables出现No such file or directory](https://www.cnblogs.com/zejin2008/p/7102485.html),简单来说就是执行一下 modprobe br_netfilter
 * 升级内核到最新
 	
 	[centos7 升级内核](https://www.aliyun.com/jiaocheng/130885.html)

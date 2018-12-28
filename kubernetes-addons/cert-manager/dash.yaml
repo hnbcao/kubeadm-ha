@@ -1,0 +1,23 @@
+---
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata: 
+    name: dashboard-tls
+    namespace: kube-system
+    annotations:
+      certmanager.k8s.io/issuer: "letsencrypt-staging"
+      certmanager.k8s.io/acme-challenge-type: http01
+      kubernetes.io/ingress.class: traefik
+spec:
+    tls:
+    - hosts:
+      - dashboard.seos.segma.tech
+      secretName: dashboard-tls
+    rules:
+    - host: dashboard.seos.segma.tech
+      http:
+        paths:
+        - backend:
+            serviceName: kubernetes-dashboard
+            servicePort: 443
+          path: /
