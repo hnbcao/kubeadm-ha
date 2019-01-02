@@ -34,7 +34,7 @@
 	systemctl stop firewalld
 	systemctl disable firewalld
 	setenforce 0
-	sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/	selinux/config
+	sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config
 	```
 * 关闭系统的Swap（Kubernetes 1.8开始要求）
 	
@@ -53,6 +53,7 @@
 	""" > /etc/sysctl.conf
 	sysctl -p
 	```
+	[centos7添加bridge-nf-call-ip6tables出现No such file or directory](https://www.cnblogs.com/zejin2008/p/7102485.html),简单来说就是执行一下 modprobe br_netfilter
 * 升级内核到最新
 	
 	[centos7 升级内核](https://www.aliyun.com/jiaocheng/130885.html)
@@ -140,7 +141,7 @@ NET_IF=eth0
 CIDR=10.244.0.0/16
 """ > ./cluster-info
  
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/Lentil1016/kubeadm-ha/1.13.0/kubeha-gen.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/hnbcao/kubeadm-ha-master/v1.3.0/kube-gen.sh)"
 # 该步骤将可能持续2到10分钟，在该脚本进行安装部署前，将有一次对安装信息进行检查确认的机会
 ```
 部署完成之后Dashboard的端口为30000。

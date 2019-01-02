@@ -1,0 +1,7 @@
+minioConfig:
+  region: "us-east-1"
+defaultBucket:
+  enabled: false
+  ## If enabled, must be a string with length > 0
+  name: runner-cache
+
