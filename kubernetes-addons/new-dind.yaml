@@ -1,19 +1,3 @@
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: dind-config
-  namespace: kube-system
-  labels:
-    kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: EnsureExists
-data:
-  daemon.json: |
-    {
-      "hosts": ["tcp://0.0.0.0:2376","unix:///var/run/docker.sock"]
-      "insecure-registries" : ["harbor.seos.segma.tech"]
-    }
----
 apiVersion: v1
 kind: Service
 metadata:
@@ -52,6 +36,7 @@ spec:
           - dockerd
           - --storage-driver=overlay2
           - -H tcp://0.0.0.0:2376
+          - -H unix:///var/run/docker.sock
         securityContext:
           privileged: true
         ports:
