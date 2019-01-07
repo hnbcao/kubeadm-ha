@@ -22,10 +22,10 @@ metadata:
 spec:
   ports:
     - name: dind
-      port: 2375
+      port: 2376
       protocol: TCP
-      targetPort: 2375
-      nodePort: 32375
+      targetPort: 2376
+      nodePort: 32376
   selector:
     name:  dind
   type: NodePort
@@ -54,7 +54,7 @@ spec:
         securityContext:
           privileged: true
         ports:
-          - containerPort: 2375
+          - containerPort: 2376
             name: dind
         volumeMounts:
         - name: varlibdocker
