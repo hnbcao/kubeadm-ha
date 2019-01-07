@@ -15,11 +15,12 @@ spec:
   type: NodePort
 ---
 apiVersion: extensions/v1beta1
-kind: DaemonSet
+kind: Deployment
 metadata:
   name: dind
   namespace: kube-system
 spec:
+  replicas: 1
   updateStrategy:
     type: RollingUpdate
   selector:

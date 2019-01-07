@@ -25,7 +25,7 @@ spec:
   - name: dind
     port: 2375
     targetPort: 2375
-    nodePort: 2375
+    nodePort: 32375
   selector:
     app: docker-in-docker
 ---
