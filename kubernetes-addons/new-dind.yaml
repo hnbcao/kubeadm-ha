@@ -50,7 +50,7 @@ spec:
           - --storage-driver=overlay2
           - -H tcp://0.0.0.0:2376
           - -H unix:///var/run/docker.sock
-          - --insecure-registry harbor.seos.segma.tech
+          - --insecure-registry=harbor.seos.segma.tech
         securityContext:
           privileged: true
         ports:
