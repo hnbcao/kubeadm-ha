@@ -63,9 +63,9 @@ spec:
             - name: docker-image-storage
               mountPath: /var/lib/docker
       volumes:
-        - name: config-volume
-          configMap:
-            name: dind-config
+        - name: docker-image-storage
+          persistentVolumeClaim:
+            claimName: dind-data
         - name: rundind
           hostPath:
             path: /var/run/dind/
