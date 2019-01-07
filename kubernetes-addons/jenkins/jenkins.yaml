@@ -4,6 +4,7 @@ apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
   name: jenkins
+  namespace: jenkins
   labels:
     name: jenkins
 spec:
@@ -77,6 +78,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: jenkins
+  namespace: jenkins
 spec:
   # type: LoadBalancer
   selector:
@@ -97,6 +99,7 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: jenkins
+  namespace: jenkins
   annotations:
     ingress.kubernetes.io/ssl-redirect: "true"
     kubernetes.io/tls-acme: "true"
