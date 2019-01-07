@@ -38,6 +38,9 @@ spec:
           - -H unix:///var/run/dind/docker.sock
         securityContext:
           privileged: true
+        ports:
+          - containerPort: 2375
+            name: dind
         volumeMounts:
         - name: varlibdocker
           mountPath: /var/lib/docker
