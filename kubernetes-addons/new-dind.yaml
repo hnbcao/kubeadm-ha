@@ -21,8 +21,6 @@ metadata:
   namespace: kube-system
 spec:
   replicas: 1
-  updateStrategy:
-    type: RollingUpdate
   selector:
     matchLabels:
       name:  dind
