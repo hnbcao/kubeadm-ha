@@ -5,13 +5,14 @@ metadata:
   namespace: kube-system
 spec:
   ports:
-    - name: http
-      port: 80
+    - name: dind
+      port: 2375
       protocol: TCP
-      targetPort: 9093
+      targetPort: 2375
+      nodePort: 32375
   selector:
     name:  dind
-  type: "ClusterIP"
+  type: NodePort
 ---
 apiVersion: extensions/v1beta1
 kind: DaemonSet
