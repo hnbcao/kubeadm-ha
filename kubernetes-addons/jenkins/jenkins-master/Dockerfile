@@ -1,4 +1,4 @@
-FROM jenkins
+FROM jenkins/jenkins:lts-alpine
 MAINTAINER hnbcao@gmail.com
 ENV MAVEN_HOME /usr/local/maven
 ENV JAVA_HOME  /usr/local/java
