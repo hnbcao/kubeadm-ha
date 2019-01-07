@@ -47,11 +47,10 @@ spec:
       containers:
         - name: docker-in-docker
           image: docker:dind
-          imagePullPolicy: IfNotPresent
           args:
-          - dockerd
-          - --storage-driver=overlay2
-          - -H unix:///var/run/dind/docker.sock -H tcp://0.0.0.0:2375
+            - dockerd
+            - --storage-driver=overlay2
+            - -H unix:///var/run/dind/docker.sock -H tcp://0.0.0.0:2375
           securityContext:
             privileged: true
           ports:
