@@ -35,7 +35,7 @@ spec:
         args:
           - dockerd
           - --storage-driver=overlay2
-          - -H unix:///var/run/dind/docker.sock -H tcp://0.0.0.0:2375
+          - -H unix:///var/run/dind/docker.sock
         securityContext:
           privileged: true
         ports:
