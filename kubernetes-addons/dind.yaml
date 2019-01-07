@@ -45,22 +45,23 @@ spec:
         app: docker-in-docker
     spec:
       containers:
-        - name: docker-in-docker
-          image: docker:dind
-          args:
-            - dockerd
-            - --storage-driver=overlay2
-            - -H unix:///var/run/dind/docker.sock -H tcp://0.0.0.0:2375
-          securityContext:
-            privileged: true
-          ports:
-          - containerPort: 2375
-            name: dind
-          volumeMounts:
-            - name: rundind
-              mountPath: /var/run/dind
-            - name: docker-image-storage
-              mountPath: /var/lib/docker
+      - name: docker-in-docker
+        image: docker:dind
+        args:
+        - dockerd
+        - --storage-driver=overlay2
+        - -H unix:///var/run/dind/docker.sock -H tcp://0.0.0.0:2375
+        securityContext:
+          privileged: true
+        ports:
+        - containerPort: 2375
+          name: dind
+        volumeMounts:
+        - name: rundind
+          mountPath: /var/run/dind
+        - name: docker-image-storage
+          mountPath: /var/lib/docker
+      terminationGracePeriodSeconds: 30
       volumes:
         - name: docker-image-storage
           persistentVolumeClaim:
