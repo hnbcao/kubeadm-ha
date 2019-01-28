@@ -1,21 +1,10 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: dind-data
-  namespace: kube-system
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: cephfs
-  resources:
-    requests:
-      storage: 2Gi
+# 使用之前需要先创建docker config 的 secret。同步本地docker配置
+# kubectl create secret generic docker-cfg --from-file="/root/config.json"  --namespace=engine
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: dind-service
-  namespace: kube-system
 spec:
   ports:
     - name: dind
@@ -31,7 +20,6 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: dind
-  namespace: kube-system
 spec:
   replicas: 1
   selector:
@@ -44,12 +32,10 @@ spec:
     spec:
       containers:
       - name: dind
-        image: docker:18.09.1
+        image: docker:dind
         args:
           - dockerd
-          - --storage-driver=overlay2
           - -H tcp://0.0.0.0:2376
-          - -H unix:///var/run/docker.sock
           - --insecure-registry=harbor.seos.segma.tech
         securityContext:
           privileged: true
@@ -59,13 +45,18 @@ spec:
         volumeMounts:
         - name: varlibdocker
           mountPath: /var/lib/docker
+        - name: dindconfig
+          mountPath: /root/.docker/config.json
+          readOnly: true
         - name: rundind
           mountPath: /var/run/docker.sock
       terminationGracePeriodSeconds: 30
       volumes:
       - name: varlibdocker
-        persistentVolumeClaim:
-          claimName: dind-data
+        emptyDir: {}
+      - name: dindconfig
+        secret:
+          secretName: docker-cfg
       - name: rundind
         hostPath:
           path: /var/run/docker.sock
