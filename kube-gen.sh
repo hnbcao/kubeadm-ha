@@ -137,7 +137,7 @@ global_defs {
 
 vrrp_script check_haproxy {
     script "/etc/keepalived/check_haproxy.sh"
-    interval 3
+    interval 3000
 }
 
 vrrp_instance VI_1 {
