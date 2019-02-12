@@ -164,13 +164,6 @@ vrrp_instance VI_1 {
   scp ~/ikube/haproxy.cfg ${ip}:/etc/haproxy/haproxy.cfg
 
   ssh ${ip} "
-    systemctl stop keepalived
-    systemctl enable keepalived
-    systemctl start keepalived
-    systemctl stop haproxy
-    systemctl enable haproxy
-    systemctl start haproxy
-	systemctl restart keepalived
     kubeadm reset -f
     rm -rf /etc/kubernetes/pki/"
 done
@@ -255,9 +248,9 @@ emailAddress_value              = hnbcao@gmail.com
 """ > ~/ikube/tls/openssl.cnf
 openssl req -newkey rsa:4096 -nodes -config ~/ikube/tls/openssl.cnf -days 3650 -x509 -out ~/ikube/tls/tls.crt -keyout ~/ikube/tls/tls.key
 kubectl create -n kube-system secret tls ssl --cert ~/ikube/tls/tls.crt --key ~/ikube/tls/tls.key
-#kubectl apply -f /root/ingress.yaml
-kubectl apply -f https://raw.githubusercontent.com/hnbcao/kubeadm-ha-master/v1.3.0/plugin/metrics.yaml
-#kubectl apply -f https://raw.githubusercontent.com/Lentil1016/kubeadm-ha/1.13.0/plugin/kubernetes-dashboard.yaml
+kubectl apply -f https://raw.githubusercontent.com/Lentil1016/kubeadm-ha/1.13.0/plugin/traefik.yaml
+kubectl apply -f https://raw.githubusercontent.com/Lentil1016/kubeadm-ha/1.13.0/plugin/metrics.yaml
+kubectl apply -f https://raw.githubusercontent.com/Lentil1016/kubeadm-ha/1.13.0/plugin/kubernetes-dashboard.yaml
 
 echo "Plugin install finished."
 echo "Waiting for all pods into 'Running' status. You can press 'Ctrl + c' to terminate this waiting any time you like."
