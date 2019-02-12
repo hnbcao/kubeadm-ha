@@ -170,6 +170,7 @@ vrrp_instance VI_1 {
     systemctl stop haproxy
     systemctl enable haproxy
     systemctl start haproxy
+	systemctl restart keepalived
     kubeadm reset -f
     rm -rf /etc/kubernetes/pki/"
 done
