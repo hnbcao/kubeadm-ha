@@ -101,7 +101,7 @@ spec:
   - metadata:
       name: prometheus-data
     spec:
-      storageClassName: cephfs
+      storageClassName: nfs-node1
       accessModes:
         - ReadWriteOnce
       resources:
