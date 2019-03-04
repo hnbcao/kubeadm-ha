@@ -88,11 +88,11 @@
 	| REPOSITORY                              | TAG                 |
 	| --------------------------------------- | ------------------- |
 	| gcr.io/kubernetes-helm/tiller           | v2.12.0             |
-	| k8s.gcr.io/kube-proxy                   | v1.13.0             |
-	| k8s.gcr.io/kube-scheduler               | v1.13.0             |
-	| k8s.gcr.io/kube-apiserver               | v1.13.0             |
-	| k8s.gcr.io/kube-controller-manager      | v1.13.0             |
-	| k8s.gcr.io/cloud-controller-manager     | v1.13.0             |
+	| k8s.gcr.io/kube-proxy                   | v1.13.2             |
+	| k8s.gcr.io/kube-scheduler               | v1.13.2             |
+	| k8s.gcr.io/kube-apiserver               | v1.13.2             |
+	| k8s.gcr.io/kube-controller-manager      | v1.13.2             |
+	| k8s.gcr.io/cloud-controller-manager     | v1.13.2             |
 	| quay.io/calico/node                     | v3.3.2              |
 	| quay.io/calico/cni                      | v3.3.2              |
 	| quay.io/calico/typha                    | v3.3.2              |

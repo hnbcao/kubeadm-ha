@@ -1,0 +1,153 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata: 
+  name: "docker-registry"
+  namespace: registry
+  labels: 
+    app: "docker-registry"
+    chart: "docker-registry-1.5.0"
+    heritage: Tiller
+spec: 
+  replicas: 1
+  selector: 
+    matchLabels: 
+      app: "docker-registry"
+  template: 
+    metadata: 
+      labels: 
+        app: "docker-registry"
+    spec: 
+      volumes: 
+      - name: data
+        persistentVolumeClaim: 
+          claimName: docker-registry
+      - name: "docker-registry-config"
+        configMap: 
+          name: "docker-registry-config"
+          defaultMode: 420
+      containers: 
+      - name: "docker-registry"
+        image: "registry:2.6.2"
+        imagePullPolicy: IfNotPresent
+        command: 
+        - "/bin/registry"
+        - serve
+        - "/etc/docker/registry/config.yml"
+        ports: 
+        - containerPort: 5000
+          protocol: TCP
+        env: 
+        - name: REGISTRY_HTTP_SECRET
+          valueFrom: 
+            secretKeyRef: 
+              name: "docker-registry-secret"
+              key: haSharedSecret
+        - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
+          value: "/var/lib/registry"
+        resources: 
+          limits:
+            cpu: 100m
+            memory: 256Mi
+          requests:
+            cpu: 200m
+            memory: 512Mi
+        volumeMounts: 
+        - name: data
+          mountPath: "/var/lib/registry/"
+        - name: "docker-registry-config"
+          mountPath: "/etc/docker/registry"
+        livenessProbe: 
+          httpGet: 
+            path: "/"
+            port: 5000
+            scheme: HTTP
+          timeoutSeconds: 1
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe: 
+          httpGet: 
+            path: "/"
+            port: 5000
+            scheme: HTTP
+          timeoutSeconds: 1
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: docker-registry
+  namespace: registry
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: EnsureExists
+spec:
+  storageClassName: nfs-node1
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "50Gi"
+---
+kind: ConfigMap
+apiVersion: v1
+metadata: 
+  name: "docker-registry-config"
+  namespace: registry
+  labels: 
+    app: "docker-registry"
+    chart: "docker-registry-1.5.0"
+    heritage: Tiller
+data: 
+  "config.yml": "health:\n  storagedriver:\n    enabled: true\n    interval: 10s\n    threshold: 3\nhttp:\n  addr: :5000\n  headers:\n    X-Content-Type-Options:\n    - nosniff\nlog:\n  fields:\n    service: registry\nstorage:\n  cache:\n    blobdescriptor: inmemory\nversion: 0.1"
+---
+kind: Secret
+apiVersion: v1
+metadata: 
+  name: "docker-registry-secret"
+  namespace: registry
+  labels: 
+    app: "docker-registry"
+    chart: "docker-registry-1.5.0"
+    heritage: Tiller
+data: 
+  haSharedSecret: "V2ptSVltdnA2TTVaMEFKVQ=="
+type: Opaque
+---
+kind: Service
+apiVersion: v1
+metadata: 
+  name: "docker-registry"
+  namespace: registry
+  labels: 
+    app: "docker-registry"
+    chart: "docker-registry-1.5.0"
+    heritage: Tiller
+spec: 
+  ports: 
+  - name: registry
+    protocol: TCP
+    port: 5000
+    targetPort: 5000
+  selector: 
+    app: "docker-registry"
+  type: ClusterIP
+---
+kind: Ingress
+apiVersion: "extensions/v1beta1"
+metadata: 
+  name: "docker-registry"
+  namespace: registry
+  annotations: 
+    "fabric8.io/generated-by": exposecontroller
+    "kubernetes.io/ingress.class": traefik
+spec: 
+  rules:  
+  - host: "docker-registry.seos.segma.tech"
+    http: 
+    paths:  
+    - backend: 
+      serviceName: "docker-registry"
+      servicePort: 5000
