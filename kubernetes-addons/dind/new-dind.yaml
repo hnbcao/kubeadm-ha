@@ -1,62 +1,83 @@
-# 使用之前需要先创建docker config 的 secret。同步本地docker配置
-# kubectl create secret generic docker-cfg --from-file="/root/config.json"  --namespace=engine
----
-apiVersion: v1
 kind: Service
+apiVersion: v1
 metadata:
-  name: dind-service
+  name: ${appName}-service
+  namespace: ${namespace}
 spec:
   ports:
-    - name: dind
-      port: 2376
-      protocol: TCP
-      targetPort: 2376
-      nodePort: 32376
+    - protocol: TCP
+      port: ${port}
+      name: web
   selector:
-    name:  dind
-  type: NodePort
+    segma-app: ${appName}
 ---
 apiVersion: extensions/v1beta1
-kind: Deployment
+kind: Ingress
 metadata:
-  name: dind
+  name: ${appName}-ingress
+  namespace: ${namespace}
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: ${appName}.${namespace}.seos.segma.tech
+    http:
+      paths:
+        - backend:
+            serviceName: ${appName}-service
+            servicePort: ${port}
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: ${appName}
+  namespace: ${namespace}
+  labels:
+    segma-app: ${appName}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name:  dind
+      segma-app: ${appName}
   template:
     metadata:
       labels:
-        name: dind
+        segma-app: ${appName}
+        name: ${appName}
     spec:
+      terminationGracePeriodSeconds: 60
+      volumes:
+        - name: varlibdocker
+          emptyDir: {}
+        - name: dindconfig
+          secret:
+            secretName: docker-cfg
+        - name: rundind
+          hostPath:
+            path: /var/run/docker.sock
       containers:
-      - name: dind
-        image: docker:dind
+      - image: ${repository}/${org}/${imageName}:${version}
         args:
           - dockerd
           - -H tcp://0.0.0.0:2376
           - --insecure-registry=harbor.seos.segma.tech
+          - java
+          - -Djava.security.egd=file:/dev/./urandom
+          - -jar
+          - /app.jar
+        name: segma-app
         securityContext:
           privileged: true
         ports:
-          - containerPort: 2376
-            name: dind
+        - containerPort: ${port}
+          name: web
+        - containerPort: 2376
+          name: dind
         volumeMounts:
-        - name: varlibdocker
-          mountPath: /var/lib/docker
-        - name: dindconfig
-          mountPath: /root/.docker/config.json
-          readOnly: true
-        - name: rundind
-          mountPath: /var/run/docker.sock
-      terminationGracePeriodSeconds: 30
-      volumes:
-      - name: varlibdocker
-        emptyDir: {}
-      - name: dindconfig
-        secret:
-          secretName: docker-cfg
-      - name: rundind
-        hostPath:
-          path: /var/run/docker.sock
+          - name: varlibdocker
+            mountPath: /var/lib/docker
+          - name: dindconfig
+            mountPath: /root/.docker/config.json
+            readOnly: true
+          - name: rundind
+            mountPath: /var/run/docker.sock

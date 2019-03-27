@@ -4,9 +4,9 @@ metadata:
   name: admin-user
   namespace: kube-system
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
-Kind: ClusterRoleBinding 
-metadata: 
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding 
+metadata: 
   name: admin-user
   annotations:
     rbac.authorization.kubernetes.io/autoupdate: "true"
