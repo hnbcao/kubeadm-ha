@@ -263,6 +263,8 @@ mkdir -p $HOME/.kube
 cp -f /etc/kubernetes/admin.conf ${HOME}/.kube/config
 ```
 
+* 关于默认网关问题，如果有多张网卡，需要先将默认网关切换到集群使用的那张网卡上，否则可能会出现etcd无法连接等问题。（应用我用的虚拟机，有一张网卡无法做到各个节点胡同；route查看当前网关信息，route del default删除默认网关，route add default enth0设置默认网关enth0为网卡名）
+
 3)、拷贝相关证书到master2、master3
 ```
 for index in 1 2; do
