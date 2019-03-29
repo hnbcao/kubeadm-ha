@@ -218,7 +218,7 @@ VIP=10.130.29.83
 NET_IF=eth0
 CIDR=10.244.0.0/16
 """ > ./cluster-info
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/hnbcao/kubeadm-ha-master/v1.3.0/keepalived-haproxy.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/hnbcao/kubeadm-ha-master/v1.14.0/keepalived-haproxy.sh)"
 ```
 
 
@@ -242,8 +242,9 @@ apiVersion: kubeadm.k8s.io/v1beta1
 kind: ClusterConfiguration
 kubernetesVersion: v1.13.0
 controlPlaneEndpoint: "${VIP}:8443"
-maxPods: 110
+maxPods: 100
 networkPlugin: cni
+imageRepository: registry.aliyuncs.com/google_containers
 apiServer:
   certSANs:
   - ${CP0_IP}
