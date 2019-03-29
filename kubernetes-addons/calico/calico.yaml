@@ -263,7 +263,7 @@ spec:
             - name: IP
               value: "autodetect"
             - name: IP_AUTODETECTION_METHOD
-              value: "can-reach=8.8.8.8"
+              value: "can-reach=192.168.56.107"
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
               value: "Always"
@@ -522,4 +522,3 @@ spec:
     kind: NetworkPolicy
     plural: networkpolicies
     singular: networkpolicy
-
