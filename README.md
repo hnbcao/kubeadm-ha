@@ -296,7 +296,7 @@ ssh ${ip} "${JOIN_CMD} --experimental-control-plane"
 ```
 # 部署HA master
  
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/hnbcao/kubeadm-ha-master/v1.3.0/kube-ha.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/hnbcao/kubeadm-ha-master/v1.14.0/kube-ha.sh)"
 ```
 
 5、加入节点
