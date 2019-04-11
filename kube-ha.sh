@@ -59,6 +59,8 @@ while [ "${AGREE}" != "yes" ]; do
 	fi
 done
 
+IPS=(${CP0_IP} ${CP1_IP} ${CP2_IP})
+
 mkdir -p ~/ikube/tls
 echo "============Kubernetes Configuration Begin============"
 for index in 0 1 2; do
