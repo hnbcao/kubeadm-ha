@@ -159,7 +159,7 @@ vrrp_instance VI_1 {
         ${VIP}/24
     }
     track_script {   
-        check_haproxy
+
     }
 }
 

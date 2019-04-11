@@ -75,133 +75,143 @@ yum install -y kubelet kubeadm kubectl ebtables
 # 其他软件安装
 yum install wget
 ...
+
+# 拷贝离线包到集群节点
+# 安装
+# rpm -ivh *.rpm --force --nodeps
+rpm -ivh ./base/packages/*.rpm --nodeps --force
+rpm -ivh ./docker-ce-stable/packages/*.rpm --nodeps --force
+rpm -ivh ./extras/packages/*.rpm --nodeps --force
+rpm -ivh ./kubernetes/packages/*.rpm --nodeps --force
+rpm -ivh ./updates/packages/*.rpm --nodeps --force
+
 ```
 
 2、节点系统配置
 
 * 关闭SELinux、防火墙
 
-	```
-	systemctl stop firewalld
-	systemctl disable firewalld
-	setenforce 0
-	sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config
-	```
+```
+systemctl stop firewalld
+systemctl disable firewalld
+setenforce 0
+sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config
+```
 
 * 关闭系统的Swap（Kubernetes 1.8开始要求）
 	
-	```
-	swapoff -a
-	yes | cp /etc/fstab /etc/fstab_bak
-	cat /etc/fstab_bak |grep -v swap > /etc/fstab
-	```
+```
+swapoff -a
+yes | cp /etc/fstab /etc/fstab_bak
+cat /etc/fstab_bak |grep -v swap > /etc/fstab
+```
 * 配置L2网桥在转发包时会被iptables的FORWARD规则所过滤，该配置被CNI插件需要，更多信息请参考[Network Plugin Requirements](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/#network-plugin-requirements)
 
-	```
-	echo """
-	vm.swappiness = 0
-	net.bridge.bridge-nf-call-ip6tables = 1
-	net.bridge.bridge-nf-call-iptables = 1
-	""" > /etc/sysctl.conf
-	sysctl -p
-	```
-	[centos7添加bridge-nf-call-ip6tables出现No such file or directory](https://www.cnblogs.com/zejin2008/p/7102485.html),简单来说就是执行一下 modprobe br_netfilter
+```
+echo """
+vm.swappiness = 0
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+""" > /etc/sysctl.conf
+sysctl -p
+```
+[centos7添加bridge-nf-call-ip6tables出现No such file or directory](https://www.cnblogs.com/zejin2008/p/7102485.html),简单来说就是执行一下 modprobe br_netfilter
 
 * 同步时间
-	```
-	ntpdate -u ntp.api.bz
-	```
+```
+ntpdate -u ntp.api.bz
+```
 
 * 升级内核到最新（已准备内核离线安装包，可选）
 	
-	[centos7 升级内核](https://www.aliyun.com/jiaocheng/130885.html)
+[centos7 升级内核](https://www.aliyun.com/jiaocheng/130885.html)
 
-    [参考文章](https://www.kubernetes.org.cn/5163.html)
-    ```
-    grub2-set-default 0 && grub2-mkconfig -o /etc/grub2.cfg
-    grubby --default-kernel
-    grubby --args="user_namespace.enable=1" --update-kernel="$(grubby --default-kernel)"
-    ```
+[参考文章](https://www.kubernetes.org.cn/5163.html)
+```
+grub2-set-default 0 && grub2-mkconfig -o /etc/grub2.cfg
+grubby --default-kernel
+grubby --args="user_namespace.enable=1" --update-kernel="$(grubby --default-kernel)"
+```
 
 * 重启系统，确认内核版本后，开启IPVS（如果未升级内核，去掉ip_vs_fo）
 
-	```
-	uname -a
-	cat > /etc/sysconfig/modules/ipvs.modules <<EOF
-	#!/bin/bash
-	ipvs_modules="ip_vs ip_vs_lc ip_vs_wlc ip_vs_rr ip_vs_wrr 	ip_vs_lblc ip_vs_lblcr ip_vs_dh ip_vs_sh ip_vs_fo 	ip_vs_nq ip_vs_sed ip_vs_ftp nf_conntrack"
-	for kernel_module in \${ipvs_modules}; do
- 	 	/sbin/modinfo -F filename \${kernel_module} > /dev/null 2>&1
- 		if [ $? -eq 0 ]; then
-	 		/sbin/modprobe \${kernel_module}
- 		fi
-	done
-	EOF
-	chmod 755 /etc/sysconfig/modules/ipvs.modules && bash /etc/sysconfig/modules/ipvs.modules && lsmod | grep ip_vs
-	```
+```
+uname -a
+cat > /etc/sysconfig/modules/ipvs.modules <<EOF
+#!/bin/bash
+ipvs_modules="ip_vs ip_vs_lc ip_vs_wlc ip_vs_rr ip_vs_wrr ip_vs_lblc ip_vs_lblcr ip_vs_dh ip_vs_sh ip_vs_fo ip_vs_nq ip_vs_sed ip_vs_ftp nf_conntrack"
+for kernel_module in \${ipvs_modules}; do
+ /sbin/modinfo -F filename \${kernel_module} > /dev/null 2>&1
+ if [ $? -eq 0 ]; then
+ /sbin/modprobe \${kernel_module}
+ fi
+done
+EOF
+chmod 755 /etc/sysconfig/modules/ipvs.modules && bash /etc/sysconfig/modules/ipvs.modules && lsmod | grep ip_vs
+```
 	
-	执行sysctl -p报错可执行modprobe br_netfilter，请参考[centos7添加bridge-nf-call-ip6tables出现No such file or directory
+执行sysctl -p报错可执行modprobe br_netfilter，请参考[centos7添加bridge-nf-call-ip6tables出现No such file or directory
 ](https://www.cnblogs.com/zejin2008/p/7102485.html)
 
-* 所有机器需要设定/etc/sysctl.d/k8s.conf的系统参数
-    ```
-    # https://github.com/moby/moby/issues/31208 
-    # ipvsadm -l --timout
-    # 修复ipvs模式下长连接timeout问题 小于900即可
-	cat <<EOF > /etc/sysctl.d/k8s.conf
-	net.ipv4.tcp_keepalive_time = 600
-	net.ipv4.tcp_keepalive_intvl = 30
-	net.ipv4.tcp_keepalive_probes = 10
-	net.ipv6.conf.all.disable_ipv6 = 1
-	net.ipv6.conf.default.disable_ipv6 = 1
-	net.ipv6.conf.lo.disable_ipv6 = 1
-	net.ipv4.neigh.default.gc_stale_time = 120
-	net.ipv4.conf.all.rp_filter = 0
-	net.ipv4.conf.default.rp_filter = 0
-	net.ipv4.conf.default.arp_announce = 2
-	net.ipv4.conf.lo.arp_announce = 2
-	net.ipv4.conf.all.arp_announce = 2
-	net.ipv4.ip_forward = 1
-	net.ipv4.tcp_max_tw_buckets = 5000
-	net.ipv4.tcp_syncookies = 1
-	net.ipv4.tcp_max_syn_backlog = 1024
-	net.ipv4.tcp_synack_retries = 2
-	net.bridge.bridge-nf-call-ip6tables = 1
-	net.bridge.bridge-nf-call-iptables = 1
-	net.netfilter.nf_conntrack_max = 2310720
-	fs.inotify.max_user_watches=89100
-	fs.may_detach_mounts = 1
-	fs.file-max = 52706963
-	fs.nr_open = 52706963
-	net.bridge.bridge-nf-call-arptables = 1
-	vm.swappiness = 0
-	vm.overcommit_memory=1
-	vm.panic_on_oom=0
-	EOF
-	sysctl --system
-    ```
+* 所有机器需要设定/etc/sysctl.d/k8s.conf的系统参数(可选)
+```
+# https://github.com/moby/moby/issues/31208 
+# ipvsadm -l --timout
+# 修复ipvs模式下长连接timeout问题 小于900即可
+cat <<EOF > /etc/sysctl.d/k8s.conf
+net.ipv4.tcp_keepalive_time = 600
+net.ipv4.tcp_keepalive_intvl = 30
+net.ipv4.tcp_keepalive_probes = 10
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+net.ipv4.neigh.default.gc_stale_time = 120
+net.ipv4.conf.all.rp_filter = 0
+net.ipv4.conf.default.rp_filter = 0
+net.ipv4.conf.default.arp_announce = 2
+net.ipv4.conf.lo.arp_announce = 2
+net.ipv4.conf.all.arp_announce = 2
+net.ipv4.ip_forward = 1
+net.ipv4.tcp_max_tw_buckets = 5000
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_max_syn_backlog = 1024
+net.ipv4.tcp_synack_retries = 2
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.netfilter.nf_conntrack_max = 2310720
+fs.inotify.max_user_watches=89100
+fs.may_detach_mounts = 1
+fs.file-max = 52706963
+fs.nr_open = 52706963
+net.bridge.bridge-nf-call-arptables = 1
+vm.swappiness = 0
+vm.overcommit_memory=1
+vm.panic_on_oom=0
+EOF
+sysctl --system
+```
 
 * 设置开机启动
-    ```
-    # 启动docker
-	sed -i "13i ExecStartPost=/usr/sbin/iptables -P FORWARD ACCEPT" /usr/lib/systemd/system/docker.service
-    systemctl daemon-reload
-    systemctl enable docker
-    systemctl start docker
-    # 设置kubelet开机启动
-    systemctl enable kubelet
+```
+# 启动docker
+sed -i "13i ExecStartPost=/usr/sbin/iptables -P FORWARD ACCEPT" /usr/lib/systemd/system/docker.service
+systemctl daemon-reload
+systemctl enable docker
+systemctl start docker
+# 设置kubelet开机启动
+systemctl enable kubelet
 
-    systemctl enable keepalived
-    systemctl enable haproxy
-    ```
+systemctl enable keepalived
+systemctl enable haproxy
+```
 
 * 设置免密登录
-	```
-	# 1、三次回车后，密钥生成完成
-	ssh-keygen
-	# 2、拷贝密钥到其他节点
-	ssh-copy-id -i ~/.ssh/id_rsa.pub  用户名字@192.168.x.xxx
-	```
+```
+# 1、三次回车后，密钥生成完成
+ssh-keygen
+# 2、拷贝密钥到其他节点
+ssh-copy-id -i ~/.ssh/id_rsa.pub  用户名字@192.168.x.xxx
+```
 
 **、 Kubernetes要求集群中所有机器具有不同的Mac地址、产品uuid、Hostname。
 
@@ -240,7 +250,7 @@ rm -rf /etc/kubernetes/pki/
 echo """
 apiVersion: kubeadm.k8s.io/v1beta1
 kind: ClusterConfiguration
-kubernetesVersion: v1.13.0
+kubernetesVersion: v1.14.0
 controlPlaneEndpoint: "${VIP}:8443"
 maxPods: 100
 networkPlugin: cni

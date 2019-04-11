@@ -112,10 +112,10 @@ spec:
   - metadata:
       name: elasticsearch-logging
       annotations:
-        volume.beta.kubernetes.io/storage-class: cephfs
+        volume.beta.kubernetes.io/storage-class: nfs-node1
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
           storage: 20Gi
-      storageClassName: cephfs
+      storageClassName: nfs-node1
