@@ -42,7 +42,7 @@ yum install net-tools -y
 # 时间同步
 yum install -y ntpdate
 
-# 安装docker（建议19.8.06）
+# 安装docker（建议18.06.3.ce）
 yum install -y yum-utils device-mapper-persistent-data lvm2
 yum-config-manager \
  --add-repo \
@@ -52,6 +52,7 @@ yum makecache fast
 yum list docker-ce --showduplicates | sort -r
 ## 安装指定版本
 sudo yum install docker-ce-<VERSION_STRING>
+eg:sudo yum install docker-ce-18.06.3.ce
 
 # 安装文件管理器，XShell可通过rz sz命令上传或者下载服务器文件
 yum intall lrzsz -y
