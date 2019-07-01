@@ -77,6 +77,7 @@ kubernetesVersion: v1.13.0
 controlPlaneEndpoint: "${VIP}:8443"
 maxPods: 110
 networkPlugin: cni
+imageRepository: registry.aliyuncs.com/google_containers
 apiServer:
   certSANs:
   - ${CP0_IP}
