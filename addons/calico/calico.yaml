@@ -231,7 +231,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v3.3.2
+          image: harbor.seos.segma.tech/kube-core/calico-node:v3.3.2
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -328,7 +328,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/calico/cni:v3.3.2
+          image: harbor.seos.segma.tech/kube-core/calico-cni:v3.3.2
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
