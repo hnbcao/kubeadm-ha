@@ -44,9 +44,8 @@ yum install -y ntpdate
 
 # 安装docker（建议18.06.3.ce）
 yum install -y yum-utils device-mapper-persistent-data lvm2
-yum-config-manager \
- --add-repo \
- https://download.docker.com/linux/centos/docker-ce.repo
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 yum makecache fast
 ## 列出Docker版本
 yum list docker-ce --showduplicates | sort -r
@@ -55,7 +54,7 @@ sudo yum install docker-ce-<VERSION_STRING>
 eg:sudo yum install docker-ce-18.06.3.ce
 
 # 安装文件管理器，XShell可通过rz sz命令上传或者下载服务器文件
-yum intall lrzsz -y
+yum install lrzsz -y
 
 # 安装keepalived、haproxy
 yum install -y socat keepalived ipvsadm haproxy
