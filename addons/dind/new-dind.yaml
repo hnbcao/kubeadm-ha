@@ -1,49 +1,48 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: ${appName}-service
-  namespace: ${namespace}
+  name: dind-service
+  namespace: segma-store
 spec:
   ports:
     - protocol: TCP
-      port: ${port}
+      port: 2376
       name: web
   selector:
-    segma-app: ${appName}
+    name: dind
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: ${appName}-ingress
-  namespace: ${namespace}
+  name: dind-ingress
+  namespace: segma-store
   annotations:
     kubernetes.io/ingress.class: traefik
 spec:
   rules:
-  - host: ${appName}.${namespace}.seos.segma.tech
+  - host: dind.segma-store.seos.segma.tech
     http:
       paths:
         - backend:
-            serviceName: ${appName}-service
-            servicePort: ${port}
+            serviceName: dind-service
+            servicePort: 2376
 ---
 kind: Deployment
 apiVersion: extensions/v1beta1
 metadata:
-  name: ${appName}
-  namespace: ${namespace}
+  name: dind
+  namespace: segma-store
   labels:
-    segma-app: ${appName}
+    name: dind
 spec:
   replicas: 1
   selector:
     matchLabels:
-      segma-app: ${appName}
+      name: dind
   template:
     metadata:
       labels:
-        segma-app: ${appName}
-        name: ${appName}
+        name: dind
     spec:
       terminationGracePeriodSeconds: 60
       volumes:
@@ -56,21 +55,15 @@ spec:
           hostPath:
             path: /var/run/docker.sock
       containers:
-      - image: ${repository}/${org}/${imageName}:${version}
+      - image: docker:dind
         args:
           - dockerd
           - -H tcp://0.0.0.0:2376
           - --insecure-registry=harbor.seos.segma.tech
-          - java
-          - -Djava.security.egd=file:/dev/./urandom
-          - -jar
-          - /app.jar
         name: segma-app
         securityContext:
           privileged: true
         ports:
-        - containerPort: ${port}
-          name: web
         - containerPort: 2376
           name: dind
         volumeMounts:
