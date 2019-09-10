@@ -1,6 +1,10 @@
-## kubernetes v1.14.0高可用master集群部署（使用kubeadm，离线安装）
+## kubernetes v1.14.0高可用master集群部署（使用kubeadm，离线安装，最新支持kubernetes v1.15.3）
 
-本文基于[kubeadm HA master(v1.13.0)离线包 + 自动化脚本 + 常用插件 For Centos/Fedora](https://www.kubernetes.org.cn/4948.html)编写，修改了master之间的负载均衡方式为HAProxy+keeplived方式。
+* 1、本文基于[kubeadm HA master(v1.13.0)离线包 + 自动化脚本 + 常用插件 For Centos/Fedora](https://www.kubernetes.org.cn/4948.html)编写，修改了master之间的负载均衡方式为HAProxy+keeplived方式。
+* 2、此离线教程必须保证目标安装环境与离线包下载环境一致，或者是考虑做yum镜像源。
+* 3、关于keepalived+haproxy负载均衡，由于是在阿里云上搭建的，事实上是没有实现的，至于为何也成功部署了环境，其实是每台机器上keepalived都处于激活状态，对虚拟ip的访问都映射到了本机，本机又通过haproxy将请求负载到了api-server上。这是个神奇的事情，直到现在才搞清楚keepalived+haproxy的原理，如果是在阿里云上部署，这块建议使用阿里云的负载均衡功能。（keepalived+haproxy是为了实现api-server的负载均衡）
+* 4、关于内核，实际上升不升级应该问题都不是很大，至少目前环境没出现过问题。
+* 5、关于kubernetes版本，目前该教程能支持最新的v1.15.3版本的安装，注意修改版本号。
 
 集群方案：
 
@@ -70,6 +74,8 @@ repo_gpgcheck=0
 gpgkey=http://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
         http://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
 EOF
+
+# 建议指定各个软件的版本号，使用yum list 软件名（如kubelet） --showduplicates | sort -r列出版本号。
 yum install -y kubelet kubeadm kubectl ebtables
 
 # 其他软件安装
@@ -221,10 +227,10 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub  用户名字@192.168.x.xxx
 cd ~/
 # 创建集群信息文件
 echo """
-CP0_IP=10.130.29.80
-CP1_IP=10.130.29.81
-CP2_IP=10.130.29.82
-VIP=10.130.29.83
+CP0_IP=192.168.56.103
+CP1_IP=192.168.56.103
+CP2_IP=192.168.56.104
+VIP=192.168.56.102
 NET_IF=eth0
 CIDR=10.244.0.0/16
 """ > ./cluster-info
@@ -309,7 +315,7 @@ ssh ${ip} "${JOIN_CMD} --experimental-control-plane"
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/hnbcao/kubeadm-ha-master/v1.14.0/kube-ha.sh)"
 ```
 
-5、加入节点
+5、加入节点（这是个错误的操作，并不需要在node部署keepalived+haproxy，如果node节点无法ping通虚拟IP（VIP），其原因是当前环境无法实现vip，具体原因由于能力有限，只能麻烦自己找找咯，方便分享的话不胜感激。）
 
 * 各个节点需要配置keepalived 和 haproxy
 
@@ -409,5 +415,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/hnbcao/kubeadm-ha-master
 	kubeadm token create --print-join-command
 	```
 6、结束安装
+
+此时集群还需要安装网络组件，我选择了calico。具体安装方式可访问[calico官网](https://www.projectcalico.org/)，或者运行本仓库里面addons/calico下的配置。注意替换里面的镜像和Deployment里面的环境变量CALICO_IPV4POOL_CIDR为/etc/kubernetes/kubeadm-config.yaml里面networking.podSubnet的值。
 
 文章只是在文章[kubeadm HA master(v1.13.0)离线包 + 自动化脚本 + 常用插件 For Centos/Fedora](https://www.kubernetes.org.cn/4948.html)的基础上，修改了master的HA方案。关于集群安装的详细步骤，建议访问[kubeadm HA master(v1.13.0)离线包 + 自动化脚本 + 常用插件 For Centos/Fedora](https://www.kubernetes.org.cn/4948.html)。

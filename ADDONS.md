@@ -13,23 +13,23 @@
     countryName_value               = CN
 
     stateOrProvinceName             = State or Province Name (full name)
-    stateOrProvinceName_value       = Beijing
+    stateOrProvinceName_value       = Chongqing
 
     localityName                    = Locality Name (eg, city)
-    localityName_value              = Haidian
+    localityName_value              = Yubei
 
     organizationName                = Organization Name (eg, company)
-    organizationName_value          = Channelsoft
+    organizationName_value          = HNBCAO
 
     organizationalUnitName          = Organizational Unit Name (eg, section)
     organizationalUnitName_value    = R & D Department
 
     commonName                      = Common Name (eg, your name or your server\'s hostname)
-    commonName_value                = *.multi.io
+    commonName_value                = *.hnbcao.io
 
 
     emailAddress                    = Email Address
-    emailAddress_value              = lentil1016@gmail.com
+    emailAddress_value              = hnbcao@163.com
     """ > ~/ikube/tls/openssl.cnf
     openssl req -newkey rsa:4096 -nodes -config ~/ikube/tls/openssl.cnf -days 3650 -x509 -out ~/ikube/tls/tls.crt -keyout ~/ikube/tls/tls.key
     kubectl create -n kube-system secret tls ssl --cert ~/ikube/tls/tls.crt --key ~/ikube/tls/tls.key
