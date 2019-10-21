@@ -5,7 +5,7 @@ metadata:
   name: grafana-data-pvc
   namespace: kube-system
 spec:
-  storageClassName: nfs-node1
+  storageClassName: cephfs
   accessModes:
     - ReadWriteMany
   resources:
