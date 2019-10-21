@@ -5,7 +5,6 @@ else
     echo "============This System Have Install Docker !!!============"
     exit 10
 fi
-rm -rf /etc/yum.repos.d/docker-ce.*
 echo "============Prepare Docker Install !!!============"
 yum install -y yum-utils device-mapper-persistent-data lvm2
 echo "============Add Docker Yum Repo !!!============"
