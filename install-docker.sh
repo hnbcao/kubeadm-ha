@@ -1,8 +1,9 @@
 #/bin/bash
 if [ -z "`yum list installed | grep docker`" ] ;then
-    echo "============This System Can Not Install Docker !!!============"
+    echo "============This System Have Not Install Docker !!!============"
 else
-    exit 0
+    echo "============This System Have Install Docker !!!============"
+    exit 10
 fi
 echo "============Prepare Docker Install !!!============"
 yum install -y yum-utils device-mapper-persistent-data lvm2
