@@ -393,9 +393,18 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/hnbcao/kubeadm-ha-master
 	        check_haproxy
 	    }
 	}
-	
-	}
 	```
+
+	```
+	/etc/keepalived/check_haproxy.sh
+
+	#!/bin/bash
+	A=`ps -C haproxy --no-header |wc -l`
+	if [ $A -eq 0 ];then
+	/etc/init.d/keepalived stop
+	fi
+	```
+
 注意两个配置中的${MASTER1 _ IP}, ${MASTER2 _ IP}, ${MASTER3 _ IP}、${VIP}需要替换为自己集群相应的IP地址
 
 * 重启keepalived和haproxy
