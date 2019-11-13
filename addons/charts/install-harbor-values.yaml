@@ -1,0 +1,114 @@
+expose:
+  type: ingress
+  ingress:
+    hosts:
+      core: core.harbor.domain
+      notary: notary.harbor.domain
+    # set to the type of ingress controller if it has specific requirements.
+    # leave as `default` for most ingress controllers.
+    # set to `gce` if using the GCE ingress controller
+    # set to `ncp` if using the NCP (NSX-T Container Plugin) ingress controller
+    controller: default
+    annotations:
+      ingress.kubernetes.io/ssl-redirect: "true"
+      ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  
+externalURL: https://core.harbor.domain
+
+persistence:
+  enabled: true
+  resourcePolicy: "keep"
+  persistentVolumeClaim:
+    registry:
+      accessMode: ReadWriteOnce
+      size: 500Gi
+    chartmuseum:
+      accessMode: ReadWriteOnce
+      size: 5Gi
+    jobservice:
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    database:
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    redis:
+      accessMode: ReadWriteOnce
+      size: 1Gi
+
+imagePullPolicy: IfNotPresent
+
+logLevel: debug
+
+harborAdminPassword: "Harbor12345"
+
+nginx:
+  image:
+    repository: goharbor/nginx-photon
+    tag: v1.8.5
+
+portal:
+  image:
+    repository: goharbor/harbor-portal
+    tag: v1.8.5
+
+core:
+  image:
+    repository: goharbor/harbor-core
+    tag: v1.8.5
+
+jobservice:
+  image:
+    repository: goharbor/harbor-jobservice
+    tag: v1.8.5
+
+registry:
+  registry:
+    image:
+      repository: goharbor/registry-photon
+      tag: v2.7.1-patch-2819-v1.8.5
+
+  controller:
+    image:
+      repository: goharbor/harbor-registryctl
+      tag: v1.8.5
+
+chartmuseum:
+  enabled: true
+  image:
+    repository: goharbor/chartmuseum-photon
+    tag: v0.9.0-v1.8.5
+
+clair:
+  enabled: true
+  image:
+    repository: goharbor/clair-photon
+    tag: v2.0.8-v1.8.5
+
+notary:
+  enabled: true
+  server:
+    image:
+      repository: goharbor/notary-server-photon
+      tag: v0.6.1-v1.8.5
+
+  signer:
+    image:
+      repository: goharbor/notary-signer-photon
+      tag: v0.6.1-v1.8.5
+
+database:
+  type: internal
+  internal:
+    image:
+      repository: goharbor/harbor-db
+      tag: v1.8.5
+    password: "segma@cisdi"
+
+redis:
+  type: internal
+  internal:
+    image:
+      repository: goharbor/redis-photon
+      tag: v1.8.5

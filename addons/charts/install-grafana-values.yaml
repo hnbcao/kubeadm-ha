@@ -1,0 +1,29 @@
+image:
+  repository: grafana/grafana
+  tag: 6.4.2
+  pullPolicy: IfNotPresent
+
+## Expose the grafana service to be accessed from outside the cluster (LoadBalancer service).
+## or access it from within the cluster (ClusterIP service). Set the service type and the port to serve it.
+## ref: http://kubernetes.io/docs/user-guide/services/
+##
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  enabled: true
+  annotations: 
+    kubernetes.io/ingress.class: traefik
+  hosts:
+    - grafana.local.segma.tech
+
+initChownData:
+  image:
+    repository: busybox
+    tag: "1.30"
+    pullPolicy: IfNotPresent
+
+adminUser: admin
+adminPassword: segma@cisdi

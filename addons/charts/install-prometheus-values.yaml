@@ -1,0 +1,102 @@
+alertmanager:
+  enabled: true
+  image:
+    repository: prom/alertmanager
+    tag: v0.18.0
+    pullPolicy: IfNotPresent
+  ingress:
+    enabled: true
+    hosts: 
+      - alertmanager.local.segma.tech
+  persistentVolume:
+    enabled: true
+    mountPath: /data
+    size: 2Gi
+
+configmapReload:
+  name: configmap-reload
+  image:
+    repository: jimmidyson/configmap-reload
+    tag: v0.2.2
+    pullPolicy: IfNotPresent
+
+kubeStateMetrics:
+  enabled: true
+  image:
+    repository: quay.io/coreos/kube-state-metrics
+    tag: v1.6.0
+    pullPolicy: IfNotPresent
+
+nodeExporter:
+  enabled: true
+  hostNetwork: true
+  hostPID: true
+  image:
+    repository: prom/node-exporter
+    tag: v0.18.0
+    pullPolicy: IfNotPresent
+  tolerations:
+    - key: "node-role.kubernetes.io/master"
+      effect: "NoSchedule"
+
+server:
+  enabled: true
+  name: server
+  image:
+    repository: prom/prometheus
+    tag: v2.13.1
+    pullPolicy: IfNotPresent
+  ingress:
+    enabled: true
+    hosts: 
+      - prometheus.local.segma.tech
+  persistentVolume:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    mountPath: /data
+    size: 80Gi
+  retention: "15d"
+
+pushgateway:
+  enabled: true
+  name: pushgateway
+  image:
+    repository: prom/pushgateway
+    tag: v0.8.0
+    pullPolicy: IfNotPresent
+  ingress:
+    enabled: true
+    hosts: 
+      - pushgateway.local.segma.tech
+  persistentVolume:
+    enabled: false
+    accessModes:
+      - ReadWriteOnce
+    mountPath: /data
+    size: 2Gi
+alertmanagerFiles:
+  alertmanager.yml:
+    global: {}
+      # slack_api_url: ''
+
+    receivers:
+      - name: default-receiver
+        # slack_configs:
+        #  - channel: '@you'
+        #    send_resolved: true
+
+    route:
+      group_wait: 10s
+      group_interval: 5m
+      receiver: default-receiver
+      repeat_interval: 3h
+
+
+# Adds option to add alert_relabel_configs to avoid duplicate alerts in alertmanager
+# useful in H/A prometheus with different external labels but the same alerts
+alertRelabelConfigs:
+  # alert_relabel_configs:
+  # - source_labels: [dc]
+  #   regex: (.+)\d+
+  #   target_label: dc
