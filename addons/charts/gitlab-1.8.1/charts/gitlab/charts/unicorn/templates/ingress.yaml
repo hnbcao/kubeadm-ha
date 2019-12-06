@@ -1,0 +1,41 @@
+{{- if .Values.enabled -}}
+{{- if eq (include "gitlab.ingress.enabled" $) "true" -}}
+{{- $gitlabHostname := include "gitlab.gitlab.hostname" . -}}
+{{- $tlsSecret := include "unicorn.tlsSecret" . -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ template "fullname" . }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+{{ include "gitlab.standardLabels" . | indent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: "{{ template "gitlab.ingressclass" . }}"
+    kubernetes.io/ingress.provider: traefik
+    {{ include "gitlab.certmanager_annotations" . }}
+  {{- range $key, $value := merge .Values.ingress.annotations .Values.global.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+  {{- end }}
+spec:
+  rules:
+    - host: {{ $gitlabHostname }}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ template "fullname" . }}
+              servicePort: {{ .Values.service.workhorseExternalPort }}
+          - path: /admin/sidekiq
+            backend:
+              serviceName: {{ template "fullname" . }}
+              servicePort: {{ .Values.service.externalPort }}
+  {{- if (and $tlsSecret (eq (include "gitlab.ingress.tls.enabled" $) "true" )) }}
+  tls:
+    - hosts:
+      - {{ $gitlabHostname }}
+      secretName: gitlab-tls
+  {{- else }}
+  tls: []
+  {{- end }}
+{{- end -}}
+{{- end -}}

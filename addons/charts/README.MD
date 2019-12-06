@@ -63,7 +63,7 @@ helm install -n prometheus ${BASEPATH}/prometheus-2.13.1 -f install-prometheus-v
 ***
 Chart 来源：[https://github.com/helm/charts/tree/master/stable/grafana](https://github.com/helm/charts/tree/master/stable/grafana)
 
-Grafana的安装配置在install-grafana-values.yaml修改，详细见[grafana-6.4.2/README.MD](file://prometheus-2.13.1/README.MD)
+Grafana的安装配置在install-grafana-values.yaml修改，详细见[grafana-6.4.2/README.MD](file://grafana-6.4.2/README.MD)
 
 ```sh
 # install-grafana.sh
@@ -76,10 +76,9 @@ helm install -n grafana ${BASEPATH}/grafana-6.4.2 -f install-grafana-values.yaml
 ### 三、Harbor Docker镜像仓库安装
 
 ***
-***
 Chart 来源：[https://github.com/goharbor/harbor-helm](https://github.com/goharbor/harbor-helm)
 
-Harbor的安装配置在install-harbor-values.yaml修改，详细见[harbor-1.1.5/README.MD](file://prometheus-2.13.1/README.MD)
+Harbor的安装配置在install-harbor-values.yaml修改，详细见[harbor-1.1.5/README.MD](file://harbor-1.1.5/README.MD)
 
 ```sh
 # install-harbor.sh
@@ -89,3 +88,24 @@ helm install -n harbor ${BASEPATH}/harbor-1.1.5 -f install-harbor-values.yaml --
 ```
 
 ***
+
+### 四、Gitlab代码仓库安装
+
+***
+建议使用helm3安装，安装时使用的时helm3，kubernetes版本为1.16.2；
+
+Gitlab若是迁移至新环境，则需要将原环境里面的secret拷贝至新集群再安装；
+
+Chart 来源：[https://gitlab.com/gitlab-org/charts/gitlab.git](https://gitlab.com/gitlab-org/charts/gitlab.git)
+
+Harbor的安装配置在install-harbor-values.yaml修改，详细见[gitlab-1.8.1/README.MD](file://gitlab-1.8.1/README.MD)
+
+```sh
+# install-harbor.sh
+#!/bin/sh
+BASEPATH=`pwd`
+helm install -n harbor ${BASEPATH}/harbor-1.1.5 -f install-harbor-values.yaml --namespace=harbor
+```
+
+***
+

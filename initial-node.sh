@@ -1,4 +1,5 @@
 #/bin/bash
+# bash -c "$(curl -fsSL https://raw.githubusercontent.com/hnbcao/kubeadm-ha/master/initial-node.sh)"
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
