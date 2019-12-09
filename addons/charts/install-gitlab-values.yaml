@@ -1,0 +1,267 @@
+certmanager:
+  install: false
+  rbac:
+    create: true
+gitlab:
+  'gitaly:':
+    image:
+      repository: harbor.segma.tech/gitlab-org/gitaly
+  gitlab-shell:
+    image:
+      repository: harbor.segma.tech/gitlab-org/gitlab-shell
+  task-runner:
+    image:
+      repository: harbor.segma.tech/gitlab-org/gitlab-task-runner-ce
+gitlab-runner:
+  install: true
+  rbac:
+    create: true
+  runners:
+    cache:
+      cacheShared: true
+      cacheType: s3
+      s3BucketLocation: us-east-1
+      s3BucketName: runner-cache
+      s3CacheInsecure: false
+      s3CachePath: gitlab-runner
+    locked: false
+global:
+  antiAffinity: soft
+  appConfig:
+    artifacts:
+      bucket: gitlab-artifacts
+    backups:
+      bucket: gitlab-backups
+      tmpBucket: tmp
+    cron_jobs: {}
+    defaultCanCreateGroup: true
+    defaultProjectsFeatures:
+      builds: true
+      issues: true
+      mergeRequests: true
+      snippets: true
+      wiki: true
+    defaultTheme: null
+    enableImpersonation: null
+    enableUsagePing: true
+    externalDiffs:
+      bucket: gitlab-mr-diffs
+      when: null
+    extra:
+      googleAnalyticsId: null
+      piwikSiteId: null
+      piwikUrl: null
+    gravatar:
+      plainUrl: null
+      sslUrl: null
+    incomingEmail:
+      address: ""
+      enabled: false
+      host: imap.gmail.com
+      idleTimeout: 60
+      mailbox: inbox
+      password:
+        key: password
+        secret: ""
+      port: 993
+      ssl: true
+      startTls: false
+      user: ""
+    issueClosingPattern: null
+    ldap:
+      servers: {}
+    lfs:
+      bucket: git-lfs
+    omniauth:
+      allowSingleSignOn:
+      - saml
+      autoLinkLdapUser: false
+      autoLinkSamlUser: false
+      autoSignInWithProvider: null
+      blockAutoCreatedUsers: true
+      enabled: false
+      externalProviders: []
+      providers: []
+      syncProfileAttributes:
+      - email
+      syncProfileFromProvider: []
+    packages:
+      bucket: gitlab-packages
+    pseudonymizer:
+      bucket: gitlab-pseudo
+      configMap: null
+    uploads:
+      bucket: gitlab-uploads
+    usernameChangingEnabled: true
+    webhookTimeout: null
+  application:
+    allowClusterRoles: true
+    create: false
+    links: []
+  certificates:
+    customCAs: []
+    image:
+      repository: harbor.segma.tech/gitlab-org/alpine-certificates
+      tag: 20171114-r3
+  communityImages:
+    'gitaly:':
+      repository: harbor.segma.tech/gitlab-org/gitaly
+    migrations:
+      repository: harbor.segma.tech/gitlab-org/gitlab-rails-ce
+    sidekiq:
+      repository: harbor.segma.tech/gitlab-org/gitlab-sidekiq-ce
+    task-runner:
+      repository: harbor.segma.tech/gitlab-org/gitlab-task-runner-ce
+    unicorn:
+      repository: harbor.segma.tech/gitlab-org/gitlab-unicorn-ce
+      workhorse:
+        repository: harbor.segma.tech/gitlab-org/gitlab-workhorse-ce
+  edition: ce
+  email:
+    display_name: GitLab
+    from: ""
+    reply_to: ""
+    subject_suffix: ""
+  gitaly:
+    authToken: {}
+    external: []
+    image:
+      repository: harbor.segma.tech/gitlab-org/gitaly
+    internal:
+      names:
+      - default
+  hosts:
+    domain: segma.tech
+    externalIP: null
+    https: true
+    minio:
+      name: gitlab-minio.segma.tech
+    ssh: null
+  ingress:
+    annotations:
+      ingress.kubernetes.io/ssl-redirect: true
+      kubernetes.io/ingress.class: traefik
+    configureCertmanager: false
+    enabled: true
+  initialRootPassword: {}
+  minio:
+    credentials: {}
+    enabled: true
+  operator:
+    enabled: false
+  psql:
+    password: {}
+  railsSecrets: {}
+  redis:
+    password:
+      enabled: true
+  registry:
+    bucket: registry
+    certificate: {}
+    httpSecret: {}
+  runner:
+    registrationToken: {}
+  service:
+    annotations: {}
+  shell:
+    authToken: {}
+    hostKeys: {}
+  smtp:
+    address: smtp.163.com
+    authentication: login
+    enabled: false
+    openssl_verify_mode: peer
+    password:
+      key: password
+      secret: smtp-password
+    port: 25
+    starttls_auto: true
+    user_name: seos_gitlab@163.com
+  time_zone: UTC
+  workhorse: {}
+nginx-ingress:
+  controller:
+    config:
+      enable-vts-status: "true"
+      hsts-include-subdomains: "false"
+      server-name-hash-bucket-size: "256"
+      server-tokens: "false"
+      ssl-ciphers: ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4
+      ssl-protocols: TLSv1.1 TLSv1.2
+      use-http2: "false"
+    extraArgs:
+      force-namespace-isolation: ""
+    metrics:
+      enabled: true
+      service:
+        annotations:
+          prometheus.io/port: "10254"
+          prometheus.io/scrape: "true"
+    minAvailable: 2
+    publishService:
+      enabled: true
+    replicaCount: 3
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    scope:
+      enabled: true
+    service:
+      externalTrafficPolicy: Local
+    stats:
+      enabled: true
+  defaultBackend:
+    minAvailable: 1
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: 5m
+        memory: 5Mi
+  enabled: false
+  rbac:
+    create: true
+  serviceAccount:
+    create: true
+  tcpExternalConfig: "true"
+postgresql:
+  existingSecret: secret
+  imageTag: 9.6.8
+  install: true
+  metrics:
+    enabled: true
+  postgresDatabase: gitlabhq_production
+  postgresUser: gitlab
+  usePasswordFile: true
+prometheus:
+  alertmanager:
+    enabled: false
+  alertmanagerFiles:
+    alertmanager.yml: {}
+  install: false
+  kubeStateMetrics:
+    enabled: false
+  nodeExporter:
+    enabled: false
+  pushgateway:
+    enabled: false
+  rbac:
+    create: true
+redis-ha:
+  enabled: false
+  nameOverride: redis
+registry:
+  enabled: true
+shared-secrets:
+  enabled: true
+  image:
+    pullSecrets: []
+    repository: harbor.segma.tech/gitlab-org/kubectl
+    tag: v1.12.10
+  rbac:
+    create: true
+  selfsign:
+    image:
+      repository: harbor.segma.tech/gitlab-org/cfssl-self-sign
+      tag: 1.2
+
