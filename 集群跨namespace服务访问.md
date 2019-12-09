@@ -1,3 +1,11 @@
+### 集群跨namespace服务访问
+
+***
+
+ns-02需要访问ns-01下面的服务service01
+
+***
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -12,20 +20,8 @@ spec:
  sessionAffinity: None
  type: ExternalName
  externalName: service01.ns-01.svc.cluster.local
+ ```
 
-apiVersion: v1
-kind: Service
-metadata:
- name: segma-refiner-gateway-backend
- namespace: segma-miner
-spec:
- ports:
- - name: http
-   port: 81
-   protocol: TCP
-   targetPort: 81
- sessionAffinity: None
- type: ExternalName
- externalName: segma-refiner-gateway-backend.segma-refiner.svc.cluster.local
+- externalName：需要访问的服务域名，service01指服务名字，ns-01指命名空间，svc.cluster.local指kubernetes内部服务域名结尾，默认是svc.cluster.local
 
- 
+***
