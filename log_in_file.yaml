@@ -1,0 +1,115 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: fluentd-kubelog-fluentd-elasticsearch
+  namespace: kube-log
+  selfLink: /api/v1/namespaces/kube-log/configmaps/fluentd-kubelog-fluentd-elasticsearch
+  uid: 64c549ed-8d0b-46b0-924c-5cdb1e26be10
+  resourceVersion: '3766687'
+  creationTimestamp: '2019-11-20T07:57:29Z'
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+    app.kubernetes.io/instance: fluentd-kubelog
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/name: fluentd-elasticsearch
+    helm.sh/chart: fluentd-elasticsearch-2.0.7
+    kubernetes.io/cluster-service: 'true'
+data:
+  containers.input.conf: >-
+    <source>
+      @id containers-file-log.log
+      @type tail
+      path /mnt/logs/web/*.log
+      pos_file /var/log/containers-file-log.log.pos
+      time_format %Y-%m-%dT%H:%M:%S.%NZ
+      tag raw.containers.file.*
+      format json
+      read_from_head true
+    </source>
+    
+    <match raw.containers.file.**>
+      @id raw.containers
+      @type add
+      uuid true
+      <pair>
+        namespace "#{ENV['POD_NAMESPACE']}"
+        appname "#{ENV['APPLICATION_NAME']}"
+        podname "#{ENV['POD_NAME']}"
+        containername "#{ENV['CONTAINER_NAME']}"
+        nodename "#{ENV['NODE_NAME']}"
+      </pair>
+    </match>
+  output.conf: |-
+
+    <match **>
+      @type copy
+      <store>
+        @id kafka
+        @type kafka_buffered
+
+        @log_level debug
+        include_tag_key true
+        logstash_format true
+        # list of seed brokers
+        brokers node10.segma.tech:9092,node11.segma.tech:9092,node12.segma.tech:9092
+
+        # buffer settings
+        <buffer>
+          @type file
+          path /var/log/fluentd-buffers/kubernetes.kafka.buffer
+          flush_mode interval
+          retry_type exponential_backoff
+          flush_thread_count 2
+          flush_interval 5s
+          retry_forever
+          retry_max_interval 30
+          chunk_limit_size "#{ENV['OUTPUT_BUFFER_CHUNK_LIMIT']}"
+          queue_limit_length "#{ENV['OUTPUT_BUFFER_QUEUE_LIMIT']}"
+          overflow_action block
+        </buffer>
+        # buffer_type file
+        # buffer_path /var/log/fluentd-buffers/kubernetes.kafka.buffer
+        # buffer_path /var/log/td-agent/buffer/td
+        # flush_interval 5s
+
+        # topic settings
+        default_topic kube_logs
+
+        # data type settings
+        output_data_type json
+        # compression_codec gzip
+
+        # producer setting
+        max_send_retries 1
+        required_acks -1
+        # include_tag_key true
+      </store>
+      <store>
+        @id elasticsearch
+        @type elasticsearch
+        @log_level info
+        include_tag_key true
+        type_name _doc
+        host "#{ENV['OUTPUT_HOST']}"
+        port "#{ENV['OUTPUT_PORT']}"
+        scheme "#{ENV['OUTPUT_SCHEME']}"
+        ssl_version "#{ENV['OUTPUT_SSL_VERSION']}"
+        logstash_format true
+        logstash_prefix "#{ENV['LOGSTASH_PREFIX']}"
+        reconnect_on_error true
+        request_timeout 30s
+        <buffer>
+          @type file
+          path /var/log/fluentd-buffers/kubernetes.elasticsearch.buffer
+          flush_mode interval
+          retry_type exponential_backoff
+          flush_thread_count 2
+          flush_interval 5s
+          retry_forever
+          retry_max_interval 30
+          chunk_limit_size "#{ENV['OUTPUT_BUFFER_CHUNK_LIMIT']}"
+          queue_limit_length "#{ENV['OUTPUT_BUFFER_QUEUE_LIMIT']}"
+          overflow_action block
+        </buffer>
+      </store>
+    </match>

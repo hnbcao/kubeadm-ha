@@ -34,21 +34,23 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: traefik-ingress-controller
-  namespace: kube-system
+  namespace: kube-ingress
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: traefik-ingress-controller
-  namespace: kube-system
+  namespace: kube-ingress
 ---
 kind: ConfigMap
 apiVersion: v1
 metadata:
   name: traefik-conf
-  namespace: kube-system
+  namespace: kube-ingress
 data:
   traefik.toml: |
+    debug = false
+    logLevel = "ERROR"
     insecureSkipVerify = true
     defaultEntryPoints = ["http","https"]
     [entryPoints]
@@ -65,7 +67,7 @@ kind: DaemonSet
 apiVersion: extensions/v1beta1
 metadata:
   name: traefik-ingress-controller
-  namespace: kube-system
+  namespace: kube-ingress
   labels:
     k8s-app: traefik-ingress-lb
 spec:
@@ -76,9 +78,6 @@ spec:
         name: traefik-ingress-lb
     spec:
       serviceAccountName: traefik-ingress-controller
-      tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
       terminationGracePeriodSeconds: 60
       hostNetwork: true
       volumes:
@@ -128,13 +127,13 @@ spec:
     - protocol: TCP
       port: 443
       name: https
-  type: NodePort
+  type: ClusterIP
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: traefik-web-ui
-  namespace: kube-system
+  namespace: kube-ingress
 spec:
   selector:
     k8s-app: traefik-ingress-lb
@@ -146,12 +145,12 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: traefik-web-ui
-  namespace: kube-system
+  namespace: kube-ingress
   annotations:
     kubernetes.io/ingress.class: traefik
 spec:
   rules:
-  - host: ingress.multi.io
+  - host: traefik.segma.tech
     http:
       paths:
       - backend:
